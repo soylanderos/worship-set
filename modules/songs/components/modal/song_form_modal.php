@@ -33,7 +33,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Key Signature</label>
                             <select name="key_signature" id="key_signature" class="form-select">
-                                <option value="">Select Key</option>
+                                <option selected disabled>Select Key</option>
                                 <option <?= $key_signature == 'C' ? 'selected' : '' ?>>C</option>
                                 <option <?= $key_signature == 'Db' ? 'selected' : '' ?>>Db</option>
                                 <option <?= $key_signature == 'D' ? 'selected' : '' ?>>D</option>
@@ -113,9 +113,7 @@
     </div>
 </div>
 <style>
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #4a6cf7, #6a11cb);
-    }
+    
 
     #album_preview img {
         object-fit: cover;

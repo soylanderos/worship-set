@@ -74,7 +74,7 @@
                         <!-- CURRENT SETLIST -->
                         <div>
                             <h6 class="fw-bold text-primary mb-2">Current Setlist</h6>
-                            <p class="small text-muted mb-1">Drag & drop to reorder the songs.</p>
+                            <p class="small text-muted mb-1">This is the current setlist for the service.</p>
                             <div id="setlist_songs" class="d-flex flex-column gap-2">
                                 <?php if (empty($setlist)): ?>
                                     <div class="text-muted text-center small py-3">No songs added yet</div>
@@ -83,7 +83,7 @@
                                         $song_id = $song['song_id'];
                                         $song_key = $song['key_signature'] ?: 'Original';
                                         $song = fetch_song_data($db, $song_id);
-                                        include '../components/services/components/card/setlist_songs_card.php';
+                                        include '../components/card/setlist_songs_card.php';
                                     endforeach; ?>
                                 <?php endif; ?>
                             </div>
@@ -113,7 +113,7 @@
                             <div class="table-responsive border rounded p-2 bg-white">
                                 <table class="table table-sm align-middle mb-0 assigned-table">
                                     <thead class="table-light d-none d-md-table-header-group">
-                                        <tr>
+                                        <tr>    
                                             <th>Name</th>
                                             <th>Role</th>
                                             <th>Song to Lead</th>
@@ -123,41 +123,9 @@
                                     </thead>
                                     <tbody id="assignedMusicians" data-service-id="<?= $service_id ?>" data-segment-id="<?= $segment_id ?>">
                                         <?php if (!empty($assignments)): ?>
-                                            <?php foreach ($assignments as $a): ?>
-                                                <tr data-user-id="<?= $a['user_id'] ?>">
-                                                    <td data-label="Name"><?= htmlspecialchars($a['user_name']) ?></td>
-                                                    <td data-label="Role">
-                                                        <select class="form-select form-select-sm musician-role w-100">
-                                                            <option selected disabled>Select Role</option>
-                                                            <option value="Lead Vocal" <?= $a['role'] == 'Lead Vocal' ? 'selected' : '' ?>>Lead Vocal</option>
-                                                            <option value="Background Vocal" <?= $a['role'] == 'Background Vocal' ? 'selected' : '' ?>>Background Vocal</option>
-                                                            <option value="Guitar" <?= $a['role'] == 'Guitar' ? 'selected' : '' ?>>Guitar</option>
-                                                            <option value="Bass" <?= $a['role'] == 'Bass' ? 'selected' : '' ?>>Bass</option>
-                                                            <option value="Drums" <?= $a['role'] == 'Drums' ? 'selected' : '' ?>>Drums</option>
-                                                            <option value="Keyboard" <?= $a['role'] == 'Keyboard' ? 'selected' : '' ?>>Keyboard</option>
-                                                        </select>
-                                                    </td>
-                                                    <td data-label="Song to Lead">
-                                                        <select class="form-select form-select-sm song-select <?= $a['role'] == 'Lead Vocal' ? '' : 'd-none' ?> w-100">
-                                                            <option selected disabled>Choose Song</option>
-                                                            <?php foreach ($setlist as $song_item):
-                                                                $song_data = fetch_song_data($db, $song_item['song_id']); ?>
-                                                                <option value="<?= $song_item['song_id'] ?>" <?= $a['song_id'] == $song_item['song_id'] ? 'selected' : '' ?>>
-                                                                    <?= htmlspecialchars($song_data['title']) ?>
-                                                                </option>
-                                                            <?php endforeach; ?>
-                                                        </select>
-                                                    </td>
-                                                    <td data-label="MD" class="text-center">
-                                                        <input type="checkbox" class="form-check-input md-checkbox" <?= $a['is_md'] ? 'checked' : '' ?>>
-                                                    </td>
-                                                    <td data-label="Actions">
-                                                        <button class="btn btn-sm btn-danger btn-remove-member">
-                                                            <i class="material-symbols-rounded">delete</i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
+                                            <?php foreach ($assignments as $a):
+                                                include '../components/row/assigned_musician_row.php';
+                                            endforeach; ?>
                                         <?php else: ?>
                                             <tr>
                                                 <td colspan="5" class="text-center text-muted small">No musicians assigned yet</td>

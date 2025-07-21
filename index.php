@@ -28,7 +28,7 @@ $user_role = $_SESSION["role"];
     <!-- ⚙️ El resto lo carga dinámicamente -->
     <script src="shared/style-loader.js"></script>
 
-    <title>Guard Portal</title>
+    <title>Planning App</title>
 </head>
 
 <body data-page="index" data-user-role="<?= $user_role ?>">

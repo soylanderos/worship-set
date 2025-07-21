@@ -13,6 +13,10 @@ body {
   background: linear-gradient(#F1F3FF, #CBD4FF);
 }
 
+.bg-gradient-primary {
+        background: linear-gradient(135deg, #4a6cf7, #6a11cb);
+    }
+
 .sidebar {
     position: fixed;
     top: 0;
@@ -22,6 +26,10 @@ body {
     height: 100vh;
     background: #151A2D;
     transition: all 0.4s ease;
+}
+
+.sidebar.collapsed:hover {
+    width: 270px;
 }
 
 .sidebar.collapsed {

@@ -196,7 +196,6 @@
                 FROM service_segments ss
                 LEFT JOIN teams t ON ss.team_id = t.id
                 WHERE ss.service_id = :service_id
-                ORDER BY ss.order_index ASC
             ";
             $stmt = $db->prepare($query);
             $stmt->bindValue(':service_id', $service_id);
@@ -257,11 +256,11 @@
     function create_default_segments($db, $service_id, $church_id) {
         // Lista de teams y títulos base
         $segments = [
-            ['team_name' => 'Worship Team',         'title' => 'Worship Set',       'order_index' => 1],
-            ['team_name' => 'Consola',          'title' => 'Audio Setup',       'order_index' => 2],
-            ['team_name' => 'Medios',           'title' => 'Visuals',           'order_index' => 4],
-            ['team_name' => 'Redes',            'title' => 'Social Media Post', 'order_index' => 5],
-            ['team_name' => 'Pastor/Predicador','title' => 'Mensaje',           'order_index' => 6]
+            ['team_name' => 'Worship Team',         'title' => 'Worship Set'],
+            ['team_name' => 'Consola',          'title' => 'Audio Setup'],
+            ['team_name' => 'Medios',           'title' => 'Visuals'],
+            ['team_name' => 'Redes',            'title' => 'Social Media Post'],
+            ['team_name' => 'Pastor/Predicador','title' => 'Mensaje']
         ];
 
         foreach ($segments as $seg) {
@@ -272,13 +271,12 @@
 
             $team_id = $team ? $team['id'] : null;
 
-            $stmt = $db->prepare("INSERT INTO service_segments (service_id, team_id, title, order_index)
-                                VALUES (:service_id, :team_id, :title, :order_index)");
+            $stmt = $db->prepare("INSERT INTO service_segments (service_id, team_id, title)
+                                VALUES (:service_id, :team_id, :title)");
             $stmt->execute([
                 ':service_id'   => $service_id,
                 ':team_id'      => $team_id,
-                ':title'        => $seg['title'],
-                ':order_index'  => $seg['order_index']
+                ':title'        => $seg['title']
             ]);
         }
     }
@@ -304,8 +302,7 @@
             $query = "SELECT ss.id AS setlist_id, songs.title, songs.artist, songs.key_signature
                     FROM segment_songs ss
                     JOIN songs ON ss.song_id = songs.id
-                    WHERE ss.segment_id = :segment_id
-                    ORDER BY ss.order_index ASC";
+                    WHERE ss.segment_id = :segment_id";
             $stmt = $db->prepare($query);
             $stmt->bindValue(':segment_id', $segment_id);
             $stmt->execute();
@@ -472,43 +469,48 @@
         }
     }
 
-    function search_musicians($db, $query, $church_id) {
+    function search_musicians_to_add_to_setlist($db, $query, $church_id, $segment_id) {
         try {
             $like_query = "%" . $query . "%";
 
             $sql = "SELECT 
-                    u.id,
-                    u.name,
-                    u.email,
-                    tm.position,
-                    tm.is_leader,
-                    t.name AS team_name
-                FROM users u
-                INNER JOIN team_members tm ON u.id = tm.user_id
-                INNER JOIN teams t ON tm.team_id = t.id
-                WHERE 
-                    u.church_id = :church_id
-                    AND u.status = 'active'
-                    AND t.name = 'Worship Team'
-                    AND (u.name LIKE :query OR u.email LIKE :query)
-                ORDER BY u.name ASC LIMIT 1
-            ";
+                        u.id,
+                        u.name,
+                        u.email,
+                        tm.position,
+                        tm.is_leader,
+                        t.name AS team_name
+                    FROM users u
+                    INNER JOIN team_members tm ON u.id = tm.user_id
+                    INNER JOIN teams t ON tm.team_id = t.id
+                    WHERE 
+                        u.church_id = :church_id
+                        AND u.status = 'active'
+                        AND t.name = 'Worship Team'
+                        AND (u.name LIKE :query OR u.email LIKE :query)
+                        AND u.id NOT IN (
+                            SELECT user_id FROM segment_assignments WHERE segment_id = :segment_id
+                        )
+                    ORDER BY u.name ASC
+                    LIMIT 10";
 
             $stmt = $db->prepare($sql);
             $stmt->bindValue(':church_id', $church_id, PDO::PARAM_INT);
             $stmt->bindValue(':query', $like_query, PDO::PARAM_STR);
+            $stmt->bindValue(':segment_id', $segment_id, PDO::PARAM_INT);
             $stmt->execute();
 
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         } catch (PDOException $e) {
-            error_log("Database error in search_musicians: " . $e->getMessage());
+            error_log("Database error in search_musicians_to_add_to_setlist: " . $e->getMessage());
             throw $e;
         } catch (Exception $e) {
-            error_log("Error in search_musicians: " . $e->getMessage());
+            error_log("Error in search_musicians_to_add_to_setlist: " . $e->getMessage());
             throw $e;
         }
     }
+
 
     function save_segment_assignments($db, $segment_id, $assignments) {
         try {
